@@ -1,0 +1,89 @@
+import { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Info } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+import { USE_MOCK } from '../services/adminService.js';
+import { errorMessage } from '../services/api.js';
+
+export default function Login() {
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: '', password: '', remember: true });
+  const [show, setShow] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  if (user) return <Navigate to="/" replace />;
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errs.email = 'Enter a valid email address.';
+    if (!form.password) errs.password = 'Password is required.';
+    setErrors(errs);
+    setApiError('');
+    if (Object.keys(errs).length) return;
+    setLoading(true);
+    try {
+      await login(form.email.trim(), form.password, form.remember);
+      navigate('/', { replace: true });
+    } catch (err) { setApiError(errorMessage(err)); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="login-wrap">
+      <form className="card login-card" onSubmit={submit} noValidate>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
+          <img src="/probridge-logo.png" alt="ProBridge" style={{ height: 42, objectFit: 'contain' }} />
+          <div
+            style={{
+              width: 180,
+              height: 2,
+              background: 'linear-gradient(90deg, transparent, #c28916, transparent)',
+              marginTop: 10,
+              marginBottom: 8,
+              borderRadius: 1,
+            }}
+          />
+          <span
+            style={{
+              fontSize: 12,
+              fontStyle: 'italic',
+              color: 'var(--muted)',
+              letterSpacing: '0.8px',
+              fontFamily: "'Inter', -apple-system, sans-serif",
+            }}
+          >
+            We Connect World of Real Estate
+          </span>
+        </div>
+        <h1 style={{ marginTop: 0 }}>Admin Portal</h1>
+        <p className="muted-text">Sign in to manage users and property listings.</p>
+        {USE_MOCK && <div className="note note-blue"><Info size={15} /> Demo mode: any email and password will sign you in.</div>}
+        {apiError && <div className="note note-red">{apiError}</div>}
+
+        <label className="field">
+          <span>Email</span>
+          <input type="email" autoComplete="username" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          {errors.email && <small className="field-error">{errors.email}</small>}
+        </label>
+        <label className="field">
+          <span>Password</span>
+          <div className="input-icon">
+            <input type={show ? 'text' : 'password'} autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <button type="button" className="icon-btn" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}>
+              {show ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          {errors.password && <small className="field-error">{errors.password}</small>}
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={form.remember} onChange={(e) => setForm({ ...form, remember: e.target.checked })} /> Remember me
+        </label>
+        <button className="btn btn-primary btn-block" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
+      </form>
+    </div>
+  );
+}
