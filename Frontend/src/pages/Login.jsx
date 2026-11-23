@@ -61,38 +61,7 @@ export default function Login() {
         <h1 style={{ marginTop: 0 }}>Admin Portal</h1>
         <p className="muted-text">Sign in to manage users and property listings.</p>
 
-        <div
-          style={{
-            padding: '10px 14px',
-            borderRadius: 8,
-            background: 'var(--surface, #f8fafc)',
-            border: '1px solid var(--border, #e2e8f0)',
-            marginBottom: 16,
-            fontSize: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-          }}
-        >
-          <div>
-            <div style={{ fontWeight: 600, color: 'var(--text)' }}>Super Admin Access</div>
-            <div style={{ color: 'var(--muted)', marginTop: 2 }}>
-              ID: <strong>superadmin@probridge.in</strong> &bull; Pass: <strong>admin123</strong>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            style={{ fontSize: 11, padding: '4px 10px', height: 'auto', whiteSpace: 'nowrap' }}
-            onClick={() => {
-              setForm({ email: 'superadmin@probridge.in', password: 'admin123', remember: true });
-              setErrors({});
-            }}
-          >
-            Auto-fill
-          </button>
-        </div>
+
 
         {apiError && <div className="note note-red">{apiError}</div>}
 
