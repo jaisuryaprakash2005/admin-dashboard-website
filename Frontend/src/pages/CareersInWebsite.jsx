@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import {
   Briefcase,
   Users,
@@ -24,6 +24,8 @@ import {
   ToggleRight,
   Send,
   X,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Modal from '../components/Modal.jsx';
 import ConfirmDialog from '../components/ConfirmDialog.jsx';
@@ -31,6 +33,49 @@ import { Empty, Loading } from '../components/StateBlock.jsx';
 import { adminService } from '../services/adminService.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { formatDate } from '../utils/format.js';
+import api from '../services/api.js';
+
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'elrw6gnd';
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'probridge';
+const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
+async function uploadCareerImage(file) {
+  // 1. Direct Cloudinary unsigned upload
+  if (CLOUD_NAME && UPLOAD_PRESET) {
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('upload_preset', UPLOAD_PRESET);
+      form.append('folder', 'probridge/careers');
+      const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: form });
+      const data = await res.json();
+      if (res.ok && (data.secure_url || data.url)) {
+        return data.secure_url || data.url;
+      }
+    } catch (e) {
+      console.warn('[Cloudinary upload fallback]', e.message);
+    }
+  }
+
+  // 2. Backend /api/upload/image
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('type', 'career');
+    const uploadRes = await api.post('/api/upload/image', formData);
+    if (uploadRes.data?.url) return uploadRes.data.url;
+  } catch (backendErr) {
+    console.warn('[Backend upload fallback]', backendErr.message);
+  }
+
+  // 3. Fallback: Base64 data URI
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+}
 
 function formatRelativeTime(dateString) {
   if (!dateString) return '';
@@ -83,6 +128,11 @@ export default function CareersInWebsite() {
 
   const [confirmDelete, setConfirmDelete] = useState(null); // { type: 'career' | 'application', item: obj }
 
+  // Image Upload State
+  const fileInputRef = useRef(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState('');
+
   // Form state for Career Add / Edit
   const [careerForm, setCareerForm] = useState({
     title: '',
@@ -91,6 +141,7 @@ export default function CareersInWebsite() {
     type: 'Full-time',
     experience: '1-3 years',
     salary: 'Competitive',
+    image: '',
     description: '',
     requirements: '',
     openings: 1,
@@ -164,6 +215,7 @@ export default function CareersInWebsite() {
   // Handle open Add Career Modal
   const handleOpenAddCareer = () => {
     setEditingCareer(null);
+    setImagePreview('');
     setCareerForm({
       title: '',
       department: DEPARTMENTS[0],
@@ -171,6 +223,7 @@ export default function CareersInWebsite() {
       type: 'Full-time',
       experience: '1-3 years',
       salary: 'Competitive',
+      image: '',
       description: '',
       requirements: '',
       openings: 1,
@@ -182,6 +235,7 @@ export default function CareersInWebsite() {
   // Handle open Edit Career Modal
   const handleOpenEditCareer = (career) => {
     setEditingCareer(career);
+    setImagePreview(career.image || '');
     setCareerForm({
       title: career.title || '',
       department: career.department || DEPARTMENTS[0],
@@ -189,12 +243,52 @@ export default function CareersInWebsite() {
       type: career.type || 'Full-time',
       experience: career.experience || '1-3 years',
       salary: career.salary || 'Competitive',
+      image: career.image || '',
       description: career.description || '',
       requirements: Array.isArray(career.requirements) ? career.requirements.join('\n') : (career.requirements || ''),
       openings: career.openings || 1,
       status: career.status || 'active',
     });
     setShowCareerModal(true);
+  };
+
+  // Image upload handler
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (PNG, JPG, WebP)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be under 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const url = await uploadCareerImage(file);
+      if (url) {
+        setCareerForm((prev) => ({ ...prev, image: url }));
+        setImagePreview(url);
+        toast.success('Career image uploaded successfully!');
+      } else {
+        toast.error('Could not process image');
+      }
+    } catch (err) {
+      toast.error('Failed to upload image: ' + err.message);
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setCareerForm((prev) => ({ ...prev, image: '' }));
+    setImagePreview('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // Save Career (Add or Edit)
@@ -695,9 +789,31 @@ export default function CareersInWebsite() {
                     justifyContent: 'space-between',
                     boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
                     transition: 'all 0.2s',
+                    overflow: 'hidden',
                   }}
                 >
                   <div>
+                    {c.image && (
+                      <div
+                        style={{
+                          margin: '-20px -20px 14px -20px',
+                          height: 140,
+                          overflow: 'hidden',
+                          background: '#F1F5F9',
+                          position: 'relative',
+                        }}
+                      >
+                        <img
+                          src={c.image}
+                          alt={c.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
                     {/* Top Tag row */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span
@@ -927,6 +1043,129 @@ export default function CareersInWebsite() {
                   <option value="active">Active (Visible on Website)</option>
                   <option value="inactive">Inactive (Draft / Hidden)</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Career Banner / Feature Image */}
+            <div>
+              <label style={{ display: 'block', fontSize: 12.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Career Banner / Feature Image (Optional)
+              </label>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+                style={{ display: 'none' }}
+              />
+
+              {imagePreview ? (
+                <div
+                  style={{
+                    position: 'relative',
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    border: '1.5px solid #CBD5E1',
+                    maxHeight: 180,
+                    background: '#F8FAFC',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <img
+                    src={imagePreview}
+                    alt="Career Preview"
+                    style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      display: 'flex',
+                      gap: 6,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline"
+                      style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', padding: '4px 10px', fontSize: 12 }}
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                    >
+                      <Upload size={13} /> Change
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger"
+                      style={{ padding: '4px 10px', fontSize: 12 }}
+                      onClick={handleRemoveImage}
+                      disabled={uploadingImage}
+                    >
+                      <Trash2 size={13} /> Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => !uploadingImage && fileInputRef.current?.click()}
+                  style={{
+                    border: '2px dashed #CBD5E1',
+                    borderRadius: 10,
+                    padding: '24px 16px',
+                    textAlign: 'center',
+                    cursor: uploadingImage ? 'wait' : 'pointer',
+                    background: '#F8FAFC',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0D5F4E'; e.currentTarget.style.background = '#F0FDF4'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.background = '#F8FAFC'; }}
+                >
+                  {uploadingImage ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: '#0D5F4E' }}>
+                      <RefreshCw size={24} className="spin" />
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>Uploading image...</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <div
+                        style={{
+                          width: 42,
+                          height: 42,
+                          borderRadius: 8,
+                          background: '#E2E8F0',
+                          display: 'grid',
+                          placeItems: 'center',
+                          color: '#475569',
+                        }}
+                      >
+                        <ImageIcon size={22} />
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0D5F4E' }}>Click to upload</span>
+                        <span style={{ fontSize: 13, color: '#64748B' }}> or drag and drop</span>
+                      </div>
+                      <span style={{ fontSize: 11.5, color: '#94A3B8' }}>PNG, JPG, WEBP up to 5MB</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Or paste image URL option */}
+              <div style={{ marginTop: 8 }}>
+                <input
+                  type="url"
+                  placeholder="Or enter direct image URL (e.g. https://images.unsplash.com/...)"
+                  value={careerForm.image || ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCareerForm({ ...careerForm, image: val });
+                    setImagePreview(val);
+                  }}
+                  style={{ width: '100%', padding: '7px 12px', borderRadius: 8, border: '1px solid #CBD5E1', fontSize: 12.5 }}
+                />
               </div>
             </div>
 

@@ -200,6 +200,7 @@ router.post('/admin', async (req, res) => {
       requirements,
       openings,
       status,
+      image,
     } = req.body || {};
 
     if (!title || !department || !location) {
@@ -224,6 +225,7 @@ router.post('/admin', async (req, res) => {
       experience: (experience || '1-3 years').trim(),
       salary: (salary || 'Competitive').trim(),
       description: (description || '').trim(),
+      image: (image || '').trim(),
       requirements: parsedReqs,
       openings: openings ? Number(openings) : 1,
       status: status || 'active',
@@ -247,7 +249,7 @@ router.patch('/admin/:id', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid career ID' });
     }
     const updates = {};
-    const { title, department, location, type, experience, salary, description, requirements, openings, status } = req.body || {};
+    const { title, department, location, type, experience, salary, description, requirements, openings, status, image } = req.body || {};
 
     if (title !== undefined) updates.title = title.trim();
     if (department !== undefined) updates.department = department.trim();
@@ -258,6 +260,7 @@ router.patch('/admin/:id', async (req, res) => {
     if (description !== undefined) updates.description = description.trim();
     if (openings !== undefined) updates.openings = Number(openings);
     if (status !== undefined) updates.status = status;
+    if (image !== undefined) updates.image = String(image).trim();
     if (requirements !== undefined) {
       updates.requirements = Array.isArray(requirements)
         ? requirements.map((r) => String(r).trim()).filter(Boolean)

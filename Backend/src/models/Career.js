@@ -9,6 +9,7 @@ const careerSchema = new mongoose.Schema(
     experience: { type: String, default: '1-3 years', trim: true },
     salary: { type: String, default: 'Competitive', trim: true },
     description: { type: String, default: '' },
+    image: { type: String, default: '' },
     requirements: { type: [String], default: [] },
     openings: { type: Number, default: 1 },
     status: {
