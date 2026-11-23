@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { errorMessage } from '../services/api.js';
 
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, booting } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '', remember: true });
   const [show, setShow] = useState(false);
@@ -13,6 +13,7 @@ export default function Login() {
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  if (booting) return null;
   if (user) return <Navigate to="/" replace />;
 
   const submit = async (e) => {
@@ -71,7 +72,7 @@ export default function Login() {
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck="false"
-            placeholder="superadmin@probridge.in"
+            placeholder="Enter email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
@@ -83,7 +84,7 @@ export default function Login() {
             <input
               type={show ? 'text' : 'password'}
               autoComplete="new-password"
-              placeholder="••••••••"
+              placeholder="Enter password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />

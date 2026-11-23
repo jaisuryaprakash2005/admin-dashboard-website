@@ -14,7 +14,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [booting, setBooting] = useState(true);
 
-  const logout = useCallback(() => { clearToken(); setUser(null); }, []);
+  const logout = useCallback(() => {
+    clearToken();
+    try { localStorage.removeItem('probridge_store_current_user'); } catch {}
+    setUser(null);
+  }, []);
   const updateUser = useCallback((updates) => setUser(prev => prev ? { ...prev, ...updates } : updates), []);
 
   // Restore session from a saved token

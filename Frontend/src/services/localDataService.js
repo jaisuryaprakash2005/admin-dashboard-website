@@ -358,15 +358,10 @@ export const localService = {
   },
 
   async me() {
-    const user = loadStore('current_user', {
-      id: 'superadmin_1',
-      name: 'Super Admin',
-      email: 'superadmin@probridge.in',
-      role: 'superadmin',
-      phone: '9876543210',
-      provider: 'email',
-      status: 'active',
-    });
+    const user = loadStore('current_user', null);
+    if (!user) {
+      throw new Error('Not authenticated');
+    }
     return wait(user);
   },
 
