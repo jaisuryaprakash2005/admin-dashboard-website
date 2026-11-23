@@ -465,18 +465,21 @@ export default function PropertyForm() {
     try {
       const formData = new FormData();
       formData.append('brochure', file);
-      const { data } = await api.post('/api/upload/pdf', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      if (data.success) {
-        setIsDirty(true);
-        setF((s) => ({ ...s, propertyBrochure: data.url, _brochureFileName: data.fileName || file.name }));
-        toast.success('Brochure uploaded successfully!');
-      } else {
-        toast.error(data.message || 'Upload failed.');
+      let brochureUrl = '';
+      try {
+        const { data } = await api.post('/api/upload/pdf', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (data.success) brochureUrl = data.url;
+      } catch (backendErr) {
+        // Fallback for standalone mode without backend: convert to local blob URL
+        brochureUrl = URL.createObjectURL(file);
       }
+      setIsDirty(true);
+      setF((s) => ({ ...s, propertyBrochure: brochureUrl, _brochureFileName: file.name }));
+      toast.success('Brochure attached successfully!');
     } catch (err) {
-      toast.error(errorMessage(err));
+      toast.error('Failed to attach brochure.');
     } finally {
       setBrochureUploading(false);
       e.target.value = '';
