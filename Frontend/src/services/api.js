@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const TOKEN_KEY = 'probridge_admin_token';
-export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? 'false') === 'true';
+export const USE_MOCK = false;
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',

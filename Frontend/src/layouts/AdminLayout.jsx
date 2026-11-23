@@ -3,7 +3,7 @@ import { Outlet, useLocation, NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeftOpen, Info, Crown } from 'lucide-react';
 import Sidebar from '../components/Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { adminService, USE_MOCK } from '../services/adminService.js';
+import { adminService } from '../services/adminService.js';
 import { initials } from '../utils/format.js';
 
 export default function AdminLayout() {
@@ -86,11 +86,7 @@ export default function AdminLayout() {
             </div>
           </NavLink>
         </header>
-        {USE_MOCK && (
-          <div className="demo-banner">
-            <Info size={16} /> Demo mode: sample data only. Changes are not saved to your database. Set VITE_USE_MOCK=false to use the real backend.
-          </div>
-        )}
+
         <main className="content"><Outlet context={{ refreshPending, isSuperAdmin }} /></main>
       </div>
     </div>

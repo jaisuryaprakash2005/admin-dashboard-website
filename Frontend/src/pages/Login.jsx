@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Info } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { USE_MOCK } from '../services/adminService.js';
 import { errorMessage } from '../services/api.js';
 
 export default function Login() {
@@ -61,7 +60,7 @@ export default function Login() {
         </div>
         <h1 style={{ marginTop: 0 }}>Admin Portal</h1>
         <p className="muted-text">Sign in to manage users and property listings.</p>
-        {USE_MOCK && <div className="note note-blue"><Info size={15} /> Demo mode: any email and password will sign you in.</div>}
+
         {apiError && <div className="note note-red">{apiError}</div>}
 
         <label className="field">

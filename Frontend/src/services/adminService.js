@@ -1,8 +1,5 @@
-// One place the UI calls. Switches between the real backend and demo data
-// with VITE_USE_MOCK. Endpoints marked NEW do not exist yet in your backend:
-// see BACKEND_CHANGES.md.
+// Admin service: directly connects to the real ProBridge backend API.
 import api, { USE_MOCK } from './api.js';
-import { mock } from './mockApi.js';
 
 export { USE_MOCK };
 
@@ -28,11 +25,13 @@ const normalizeProperty = (p) => {
     postalCode: p.postalCode || p.rawFormData?.postalCode || '',
   };
 };
+
 const normalizeUser = (u) => ({ ...u, id: u.id || u._id });
+const one = (p) => (p ? normalizeProperty(p) : p);
 
 const real = {
-  login: async (email, password) => (await api.post('/api/auth/login', { email, password })).data, // exists
-  me: async () => (await api.get('/api/auth/me')).data.user,                                         // exists
+  login: async (email, password) => (await api.post('/api/auth/login', { email, password })).data,
+  me: async () => (await api.get('/api/auth/me')).data.user,
   listProperties: async () => ((await api.get('/api/admin/properties')).data.results || []).map(normalizeProperty),
   listArchivedProperties: async () => {
     try {
@@ -50,10 +49,10 @@ const real = {
       throw err;
     }
   },
-  getProperty: async (id) => normalizeProperty((await api.get(`/api/properties/${id}`)).data.result),                   // exists
-  createProperty: async (d) => (await api.post('/api/properties', d)).data.result,                  // exists, needs admin tweaks
-  updateProperty: async (id, d) => (await api.patch(`/api/properties/${id}`, d)).data.result,        // exists, needs admin tweaks
-  deleteProperty: async (id) => (await api.delete(`/api/properties/${id}`)).data,                    // exists, needs admin tweaks
+  getProperty: async (id) => normalizeProperty((await api.get(`/api/properties/${id}`)).data.result),
+  createProperty: async (d) => (await api.post('/api/properties', d)).data.result,
+  updateProperty: async (id, d) => (await api.patch(`/api/properties/${id}`, d)).data.result,
+  deleteProperty: async (id) => (await api.delete(`/api/properties/${id}`)).data,
   archiveProperty: async (id) => {
     try {
       return (await api.patch(`/api/admin/properties/${id}/archive`)).data;
@@ -67,14 +66,14 @@ const real = {
     }
   },
   setApproval: async (id, action, remarks, targetStatus) =>
-    (await api.patch(`/api/admin/properties/${id}/approval`, { action, remarks, targetStatus })).data.result,      // NEW
+    (await api.patch(`/api/admin/properties/${id}/approval`, { action, remarks, targetStatus })).data.result,
   listUsers: async (q) => {
     const params = q ? { params: { q } } : undefined;
     return (await api.get('/api/admin/users', params)).data.results;
-  },                           // NEW
-  deleteUser: async (id) => (await api.delete(`/api/admin/users/${id}`)).data,                       // NEW
-  updateUser: async (id, updates) => (await api.patch(`/api/admin/users/${id}`, updates)).data,      // NEW
-  updateProfile: async (updates) => (await api.patch('/api/auth/profile', updates)).data,            // exists
+  },
+  deleteUser: async (id) => (await api.delete(`/api/admin/users/${id}`)).data,
+  updateUser: async (id, updates) => (await api.patch(`/api/admin/users/${id}`, updates)).data,
+  updateProfile: async (updates) => (await api.patch('/api/auth/profile', updates)).data,
   listAdmins: async () => (await api.get('/api/admin/admins')).data.results,
   createAdmin: async (d) => (await api.post('/api/admin/admins', d)).data.result,
   updateAdmin: async (id, d) => (await api.patch(`/api/admin/admins/${id}`, d)).data.result,
@@ -113,32 +112,18 @@ const real = {
   deleteCareerApplication: async (id) => (await api.delete(`/api/careers/admin/applications/${id}`)).data,
 };
 
-const s = USE_MOCK ? mock : real;
-const one = (p) => (p ? normalizeProperty(p) : p);
+const s = real;
 
 export const adminService = {
   login: (email, password) => s.login(email, password),
   me: () => s.me(),
   listProperties: async () => (await s.listProperties()).map(normalizeProperty),
-  listArchivedProperties: async () => {
-    if (USE_MOCK) {
-      // Mock: filter properties where status === 'inactive'
-      const all = await s.listProperties();
-      return all.filter((p) => p.status === 'inactive').map(normalizeProperty);
-    }
-    return (await s.listArchivedProperties()).map(normalizeProperty);
-  },
+  listArchivedProperties: async () => (await s.listArchivedProperties()).map(normalizeProperty),
   getProperty: async (id) => one(await s.getProperty(id)),
   createProperty: async (d) => one(await s.createProperty(d)),
   updateProperty: async (id, d) => one(await s.updateProperty(id, d)),
   deleteProperty: (id) => s.deleteProperty(id),
-  archiveProperty: async (id) => {
-    if (USE_MOCK) {
-      // Mock toggle — simply call updateProperty with opposite status
-      return { success: true };
-    }
-    return s.archiveProperty(id);
-  },
+  archiveProperty: (id) => s.archiveProperty(id),
   setApproval: async (id, action, remarks, targetStatus) => one(await s.setApproval(id, action, remarks, targetStatus)),
   listUsers: async (q) => (await s.listUsers(q)).map(normalizeUser),
   deleteUser: (id) => s.deleteUser(id),
@@ -156,7 +141,6 @@ export const adminService = {
   deleteLead: (id) => s.deleteLead(id),
   deleteUserEnquiryHistory: (userKey) => s.deleteUserEnquiryHistory(userKey),
   listAds: async () => {
-    if (!s.listAds) return [];
     const res = await s.listAds();
     return Array.isArray(res) ? res : (Array.isArray(res?.results) ? res.results : []);
   },
@@ -165,24 +149,22 @@ export const adminService = {
   rejectAd: (id, reason) => s.rejectAd(id, reason),
   deleteAd: (id) => s.deleteAd(id),
   listTopBanners: async () => {
-    if (!s.listTopBanners) return [];
     const res = await s.listTopBanners();
     return Array.isArray(res) ? res : (Array.isArray(res?.results) ? res.results : []);
   },
   createTopBanner: (d) => s.createTopBanner(d),
   updateTopBanner: (id, d) => s.updateTopBanner(id, d),
   deleteTopBanner: (id) => s.deleteTopBanner(id),
-  listCareers: () => (s.listCareers ? s.listCareers() : []),
+  listCareers: () => s.listCareers(),
   createCareer: (d) => s.createCareer(d),
   updateCareer: (id, d) => s.updateCareer(id, d),
   deleteCareer: (id) => s.deleteCareer(id),
-  listCareerApplications: (params) => (s.listCareerApplications ? s.listCareerApplications(params) : []),
+  listCareerApplications: (params) => s.listCareerApplications(params),
   updateCareerApplicationStatus: (id, status, notes) => s.updateCareerApplicationStatus(id, status, notes),
   deleteCareerApplication: (id) => s.deleteCareerApplication(id),
-  listBuilders: () => (s.listBuilders ? s.listBuilders() : []),
+  listBuilders: () => s.listBuilders(),
   createBuilder: (d) => s.createBuilder(d),
   updateBuilder: (id, d) => s.updateBuilder(id, d),
   deleteBuilder: (id) => s.deleteBuilder(id),
   toggleBuilderStatus: (id, status) => s.toggleBuilderStatus(id, status),
 };
-
