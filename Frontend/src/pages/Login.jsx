@@ -33,7 +33,7 @@ export default function Login() {
 
   return (
     <div className="login-wrap">
-      <form className="card login-card" onSubmit={submit} noValidate>
+      <form className="card login-card" onSubmit={submit} noValidate autoComplete="off">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
           <img src={`${import.meta.env.BASE_URL}probridge-logo.png`} alt="ProBridge" style={{ height: 42, objectFit: 'contain' }} />
           <div
@@ -61,29 +61,41 @@ export default function Login() {
         <h1 style={{ marginTop: 0 }}>Admin Portal</h1>
         <p className="muted-text">Sign in to manage users and property listings.</p>
 
-
-
         {apiError && <div className="note note-red">{apiError}</div>}
 
         <label className="field">
           <span>Email</span>
-          <input type="email" autoComplete="username" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <input
+            type="email"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            placeholder="superadmin@probridge.in"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
           {errors.email && <small className="field-error">{errors.email}</small>}
         </label>
         <label className="field">
           <span>Password</span>
           <div className="input-icon">
-            <input type={show ? 'text' : 'password'} autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <input
+              type={show ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
             <button type="button" className="icon-btn" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}>
               {show ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
           {errors.password && <small className="field-error">{errors.password}</small>}
         </label>
-        <label className="check">
-          <input type="checkbox" checked={form.remember} onChange={(e) => setForm({ ...form, remember: e.target.checked })} /> Remember me
-        </label>
-        <button className="btn btn-primary btn-block" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
+        <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 12 }}>
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
       </form>
     </div>
   );
