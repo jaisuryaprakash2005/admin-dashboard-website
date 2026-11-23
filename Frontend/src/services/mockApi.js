@@ -223,7 +223,19 @@ export const mock = {
     return wait({ success: true });
   },
   async listAds() {
-    return wait({ results: [] });
+    return wait([]);
+  },
+  async listTopBanners() {
+    return wait([]);
+  },
+  async createTopBanner(d) {
+    return wait({ result: { _id: 'tb-' + Date.now(), ...d, clicks: 0, createdAt: new Date().toISOString() } });
+  },
+  async updateTopBanner(id, d) {
+    return wait({ result: { _id: id, ...d } });
+  },
+  async deleteTopBanner() {
+    return wait({ success: true });
   },
   async createAd(d) {
     return wait({ result: { _id: 'mock-ad-1', ...d, status: 'pending_approval', createdAt: new Date().toISOString() } });

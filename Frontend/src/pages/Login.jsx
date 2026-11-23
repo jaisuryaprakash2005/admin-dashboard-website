@@ -36,7 +36,7 @@ export default function Login() {
     <div className="login-wrap">
       <form className="card login-card" onSubmit={submit} noValidate>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16 }}>
-          <img src="/probridge-logo.png" alt="ProBridge" style={{ height: 42, objectFit: 'contain' }} />
+          <img src={`${import.meta.env.BASE_URL}probridge-logo.png`} alt="ProBridge" style={{ height: 42, objectFit: 'contain' }} />
           <div
             style={{
               width: 180,

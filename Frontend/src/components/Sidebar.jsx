@@ -43,7 +43,7 @@ export default function Sidebar({ collapsed, mobileOpen, onCloseMobile, pending,
       <div className="brand" style={{ flexDirection: 'column', alignItems: 'flex-start', paddingBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: 8 }}>
           <img
-            src="/probridge-logo-white.png"
+            src={`${import.meta.env.BASE_URL}probridge-logo-white.png`}
             alt="ProBridge"
             style={{ height: collapsed ? 22 : 28, maxWidth: collapsed ? 32 : 140, objectFit: 'contain', borderRadius: 4 }}
           />

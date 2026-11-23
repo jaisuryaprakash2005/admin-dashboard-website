@@ -162,7 +162,8 @@ export default function Ads() {
 
   // Filter properties for selector
   const eligibleProperties = useMemo(() => {
-    return (properties || []).filter((p) => {
+    const list = Array.isArray(properties) ? properties : (properties?.results || []);
+    return list.filter((p) => {
       const q = propertySearch.toLowerCase().trim();
       if (!q) return true;
       return (
@@ -180,7 +181,8 @@ export default function Ads() {
 
   // Filter ads by tab & search
   const filteredAds = useMemo(() => {
-    return (ads || []).filter((ad) => {
+    const list = Array.isArray(ads) ? ads : (ads?.results || []);
+    return list.filter((ad) => {
       if (activeTab === 'pending' && ad.status !== 'pending_approval') return false;
       if (activeTab === 'published' && ad.status !== 'published') return false;
       if (activeTab === 'rejected' && ad.status !== 'rejected') return false;
@@ -198,7 +200,8 @@ export default function Ads() {
 
   // Filter top banners by search
   const filteredTopBanners = useMemo(() => {
-    return (topBanners || []).filter((b) => {
+    const list = Array.isArray(topBanners) ? topBanners : (topBanners?.results || []);
+    return list.filter((b) => {
       if (!tbSearchQ) return true;
       const q = tbSearchQ.toLowerCase();
       return (
@@ -211,7 +214,7 @@ export default function Ads() {
 
   // Counts for Mobile Ads
   const counts = useMemo(() => {
-    const list = ads || [];
+    const list = Array.isArray(ads) ? ads : (ads?.results || []);
     return {
       all: list.length,
       pending: list.filter((a) => a.status === 'pending_approval').length,
@@ -223,7 +226,7 @@ export default function Ads() {
 
   // Counts for Top Banners
   const tbCounts = useMemo(() => {
-    const list = topBanners || [];
+    const list = Array.isArray(topBanners) ? topBanners : (topBanners?.results || []);
     return {
       total: list.length,
       active: list.filter((b) => b.isActive !== false).length,

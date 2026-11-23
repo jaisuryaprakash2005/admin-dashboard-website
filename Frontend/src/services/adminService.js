@@ -155,12 +155,20 @@ export const adminService = {
   listLeadsByUsers: () => s.listLeadsByUsers(),
   deleteLead: (id) => s.deleteLead(id),
   deleteUserEnquiryHistory: (userKey) => s.deleteUserEnquiryHistory(userKey),
-  listAds: () => (s.listAds ? s.listAds() : []),
+  listAds: async () => {
+    if (!s.listAds) return [];
+    const res = await s.listAds();
+    return Array.isArray(res) ? res : (Array.isArray(res?.results) ? res.results : []);
+  },
   createAd: (d) => s.createAd(d),
   publishAd: (id) => s.publishAd(id),
   rejectAd: (id, reason) => s.rejectAd(id, reason),
   deleteAd: (id) => s.deleteAd(id),
-  listTopBanners: () => (s.listTopBanners ? s.listTopBanners() : []),
+  listTopBanners: async () => {
+    if (!s.listTopBanners) return [];
+    const res = await s.listTopBanners();
+    return Array.isArray(res) ? res : (Array.isArray(res?.results) ? res.results : []);
+  },
   createTopBanner: (d) => s.createTopBanner(d),
   updateTopBanner: (id, d) => s.updateTopBanner(id, d),
   deleteTopBanner: (id) => s.deleteTopBanner(id),
