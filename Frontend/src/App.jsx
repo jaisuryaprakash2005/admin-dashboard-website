@@ -1,4 +1,4 @@
-﻿import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import AdminLayout from './layouts/AdminLayout.jsx';
 import Login from './pages/Login.jsx';
@@ -16,6 +16,9 @@ import Admins from './pages/Admins.jsx';
 import Ads from './pages/Ads.jsx';
 import CareersInWebsite from './pages/CareersInWebsite.jsx';
 import Builders from './pages/Builders.jsx';
+import YoutubeLinks from './pages/YoutubeLinks.jsx';
+import Blogs from './pages/Blogs.jsx';
+import BridgeGuide from './pages/BridgeGuide.jsx';
 
 // Frontend-only guard. The real protection must be on the server (requireAdmin).
 function Guard({ children }) {
@@ -42,6 +45,9 @@ export default function App() {
         <Route path="ads" element={<Ads />} />
         <Route path="careers-in-website" element={<CareersInWebsite />} />
         <Route path="builders" element={<Builders />} />
+        <Route path="youtube-links" element={<YoutubeLinks />} />
+        <Route path="blogs" element={<Blogs />} />
+        <Route path="bridge-guide" element={<BridgeGuide />} />
         <Route path="archive" element={<Archive />} />
         <Route path="profile" element={<AdminProfile />} />
       </Route>

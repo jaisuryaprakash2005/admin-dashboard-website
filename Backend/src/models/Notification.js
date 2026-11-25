@@ -13,6 +13,9 @@ const notificationSchema = new mongoose.Schema(
     propertyTitle:  { type: String, default: 'Property Listing' },
     propertyImage:  { type: String, default: '' },
     type:           { type: String, default: 'enquiry' },
+    source:         { type: String, default: 'property_page', index: true },
+    subject:        { type: String, default: '' },
+    isContactUs:    { type: Boolean, default: false },
     status: {
       type: String,
       enum: [

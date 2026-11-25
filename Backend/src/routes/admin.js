@@ -461,7 +461,13 @@ router.delete(
 router.get(
   '/leads',
   handle(async (req, res) => {
-    const enquiries = await Notification.find({ type: { $in: ['enquiry', 'callback'] } }).sort({ createdAt: -1 });
+    const enquiries = await Notification.find({
+      $or: [
+        { type: { $in: ['enquiry', 'callback', 'contact_us', 'contact'] } },
+        { source: 'contact_us' },
+        { isContactUs: true },
+      ],
+    }).sort({ createdAt: -1 });
 
     const propertyIds = [...new Set(enquiries.map((e) => e.propertyId || e.property).filter(Boolean))];
     const properties = await Property.find({
@@ -527,7 +533,19 @@ router.get(
         senderPhoto: u?.photo || '',
         userTotalEnquiries: userTotal,
         isCallback,
-        requestType: isCallback ? 'Request Callback' : 'Property Enquiry',
+        isContactUs: Boolean(
+          e.isContactUs ||
+          e.source === 'contact_us' ||
+          e.type === 'contact_us' ||
+          e.type === 'contact' ||
+          (!e.propertyId && !e.property)
+        ),
+        source: e.source || (e.isContactUs || e.type === 'contact_us' || e.type === 'contact' ? 'contact_us' : 'property_page'),
+        subject: e.subject || (e.isContactUs ? 'Website Contact Us Inquiry' : ''),
+        contactUsSubject: e.subject || (e.isContactUs ? 'Website Contact Us Inquiry' : ''),
+        requestType: (e.isContactUs || e.source === 'contact_us' || e.type === 'contact_us')
+          ? 'Contact Us Form'
+          : (isCallback ? 'Request Callback' : 'Property Enquiry'),
 
         propertyId: e.propertyId || e.property,
         propertyTitle: p?.title || e.propertyTitle || 'Property Listing',

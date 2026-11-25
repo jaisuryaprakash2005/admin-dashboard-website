@@ -1,4 +1,4 @@
-﻿const path = require('path');
+const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') }); // must be first so process.env is filled before other files read it
 const express = require('express');
 const cors = require('cors');
@@ -17,6 +17,9 @@ const adsRouter           = require('./routes/ads');
 const topBannersRouter    = require('./routes/topBanners');
 const buildersRouter      = require('./routes/builders');
 const careersRouter       = require('./routes/careers');
+const youtubeLinksRouter  = require('./routes/youtubeLinks');
+const blogsRouter         = require('./routes/blogs');
+const bridgeGuidesRouter  = require('./routes/bridgeGuides');
 
 if (!process.env.JWT_SECRET) {
   console.error('âŒ JWT_SECRET is missing in Backend/.env. Refusing to start without it.');
@@ -33,6 +36,15 @@ app.use(express.json({ limit: '10mb' })); // Parse JSON request bodies (10mb: ad
 // ─€─€─€ Routes ─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€
 
 // Health check
+app.get('/api/health', (req, res) => {
+  const dbConnected = mongoose.connection.readyState === 1;
+  res.json({
+    status: 'ok',
+    database: dbConnected ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'ProBridge API is running 🚀' });
 });
@@ -88,6 +100,9 @@ app.use('/api/top-banners', topBannersRouter);
 app.use('/api/builders', buildersRouter);
 app.use('/api/careers', careersRouter);
 app.use('/api/admin/careers-proxy', careersRouter);
+app.use('/api/youtube-links', youtubeLinksRouter);
+app.use('/api/blogs', blogsRouter);
+app.use('/api/bridge-guides', bridgeGuidesRouter);
 
 // ─€─€─€ 404 Handler ─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€─€
 app.use((req, res) => {

@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 export const TOKEN_KEY = 'probridge_admin_token';
-export const USE_MOCK = false;
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
-  timeout: 15000,
+  timeout: 8000,
 });
 
 api.interceptors.request.use((config) => {

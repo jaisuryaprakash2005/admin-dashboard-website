@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import api from '../services/api.js';
 import {
   LayoutDashboard,
   Users,
@@ -13,6 +15,9 @@ import {
   Send,
   Megaphone,
   Briefcase,
+  Video,
+  BookOpen,
+  Compass,
 } from 'lucide-react';
 
 const baseLinks = [
@@ -26,10 +31,37 @@ const baseLinks = [
   { to: '/ads', label: 'Ads Management', icon: Megaphone },
   { to: '/builders', label: 'Builders & Developers', icon: Building2 },
   { to: '/careers-in-website', label: 'Careers in Website', icon: Briefcase },
+  { to: '/youtube-links', label: 'YouTube Links', icon: Video },
+  { to: '/blogs', label: 'Blogs & Articles', icon: BookOpen },
+  { to: '/bridge-guide', label: 'Bridge Guide', icon: Compass },
   { to: '/archive', label: 'Archive', icon: Archive },
 ];
 
 export default function Sidebar({ collapsed, mobileOpen, onCloseMobile, pending, onLogout, isSuperAdmin }) {
+  const [dbConnected, setDbConnected] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    // Initial health check
+    api
+      .get('/api/health')
+      .then((res) => {
+        if (active) setDbConnected(res.data?.database === 'connected');
+      })
+      .catch(() => {
+        if (active) setDbConnected(false);
+      });
+
+    const handler = (e) => {
+      if (active) setDbConnected(Boolean(e.detail?.connected));
+    };
+    window.addEventListener('probridge:db_status', handler);
+    return () => {
+      active = false;
+      window.removeEventListener('probridge:db_status', handler);
+    };
+  }, []);
+
   const links = isSuperAdmin
     ? [
         ...baseLinks.slice(0, 2),
@@ -76,18 +108,63 @@ export default function Sidebar({ collapsed, mobileOpen, onCloseMobile, pending,
             <div
               style={{
                 marginTop: 6,
-                fontSize: 10,
-                fontStyle: 'italic',
-                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                letterSpacing: '0.5px',
-                color: 'rgba(203, 213, 225, 0.75)',
-                fontWeight: 500,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 6,
               }}
             >
-              We Connect World of Real Estate
+              <span
+                style={{
+                  fontSize: 10,
+                  fontStyle: 'italic',
+                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                  letterSpacing: '0.5px',
+                  color: 'rgba(203, 213, 225, 0.75)',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                We Connect World of Real Estate
+              </span>
+
+              {dbConnected !== null && (
+                <span
+                  title={
+                    dbConnected
+                      ? 'Connected to MongoDB Atlas: showing database values only'
+                      : 'Database not connected: showing demo dummy data'
+                  }
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    flexShrink: 0,
+                    background: dbConnected ? 'rgba(34, 197, 94, 0.15)' : 'rgba(234, 179, 8, 0.15)',
+                    color: dbConnected ? '#4ade80' : '#facc15',
+                    border: dbConnected
+                      ? '1px solid rgba(74, 222, 128, 0.3)'
+                      : '1px solid rgba(250, 204, 21, 0.3)',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: '50%',
+                      background: dbConnected ? '#22c55e' : '#eab308',
+                      boxShadow: dbConnected ? '0 0 5px #22c55e' : 'none',
+                    }}
+                  />
+                  {dbConnected ? 'DB Live' : 'Demo Mode'}
+                </span>
+              )}
             </div>
           </div>
         )}

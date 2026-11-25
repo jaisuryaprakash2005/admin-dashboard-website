@@ -72,7 +72,19 @@ router.post('/', optionalAuth, async (req, res) => {
       finalMessage.toLowerCase().includes('callback') || finalMessage.toLowerCase().startsWith('request callback')
     );
 
-    const notifTitle = isCallback ? `Callback Request: ${propTitle}` : `New Enquiry: ${propTitle}`;
+    const isContactUs =
+      req.body.isContactUs === true ||
+      req.body.source === 'contact_us' ||
+      req.body.type === 'contact_us' ||
+      req.body.type === 'contact' ||
+      (!propertyId && !req.body.propertyTitle);
+
+    const subject = req.body.subject || (isContactUs ? 'Website Contact Us Inquiry' : '');
+    const source = isContactUs ? 'contact_us' : (req.body.source || 'property_page');
+
+    const notifTitle = isContactUs
+      ? (subject ? `Contact Us: ${subject}` : `Contact Us Inquiry from ${finalName}`)
+      : (isCallback ? `Callback Request: ${propTitle}` : `New Enquiry: ${propTitle}`);
 
     const notifData = {
       recipient: recipientId || 'admin',
@@ -83,9 +95,12 @@ router.post('/', optionalAuth, async (req, res) => {
       senderPhone: finalPhone,
       property: propStrId,
       propertyId: propStrId,
-      propertyTitle: propTitle,
+      propertyTitle: isContactUs ? (prop?.title || 'ProBridge Website (Contact Us)') : propTitle,
       propertyImage: propImage,
-      type: 'enquiry',
+      type: isContactUs ? 'contact_us' : (isCallback ? 'callback' : 'enquiry'),
+      source,
+      subject,
+      isContactUs,
       title: notifTitle,
       message: finalMessage,
       read: false,
@@ -138,5 +153,36 @@ router.get('/my', optionalAuth, async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 });
+
+// POST /api/enquiries/contact-us or /contact — for submissions from ProBridge website "Contact Us" page
+const handleContactUs = async (req, res) => {
+  try {
+    const { name, email, phone, subject, message } = req.body;
+    if (!name && !email && !phone) {
+      return res.status(400).json({ success: false, message: 'Please provide name and contact details.' });
+    }
+    const notif = await Notification.create({
+      recipient: 'admin',
+      recipientEmail: '',
+      senderName: name || 'Website Visitor',
+      senderEmail: email || '',
+      senderPhone: phone || '',
+      propertyTitle: 'ProBridge Website (Contact Us)',
+      type: 'contact_us',
+      source: 'contact_us',
+      subject: subject || 'General Website Enquiry',
+      isContactUs: true,
+      title: subject ? `Contact Us: ${subject}` : `Contact Us Query from ${name || 'Website Visitor'}`,
+      message: message || '',
+      read: false,
+    });
+    return res.status(201).json({ success: true, message: 'Contact inquiry received', data: notif });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+router.post('/contact-us', handleContactUs);
+router.post('/contact', handleContactUs);
 
 module.exports = router;

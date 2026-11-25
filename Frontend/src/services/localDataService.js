@@ -225,7 +225,43 @@ const seedLeads = [
     senderPhone: '9840112233',
     message: 'Is this flat pet friendly and available for immediate move-in?',
     status: 'Follow-up',
+    source: 'property_page',
+    isContactUs: false,
     createdAt: ago(3),
+  },
+  {
+    _id: 'lead-4',
+    source: 'contact_us',
+    isContactUs: true,
+    subject: 'Builder Partnership & Bulk Listing',
+    contactUsSubject: 'Builder Partnership & Bulk Listing',
+    propertyTitle: 'ProBridge Website (Contact Us)',
+    propertyLocation: 'Chennai',
+    listingType: 'General',
+    propertyPrice: '—',
+    senderName: 'Suresh Babu',
+    senderEmail: 'suresh.babu@infraestate.com',
+    senderPhone: '9840556677',
+    message: 'We are developing a 200-unit gated villa community in ECR and would like to partner with ProBridge for exclusive marketing.',
+    status: 'New',
+    createdAt: ago(0.4),
+  },
+  {
+    _id: 'lead-5',
+    source: 'contact_us',
+    isContactUs: true,
+    subject: 'Property Valuation & Legal Verification Query',
+    contactUsSubject: 'Property Valuation & Legal Verification Query',
+    propertyTitle: 'ProBridge Website (Contact Us)',
+    propertyLocation: 'Bengaluru',
+    listingType: 'General',
+    propertyPrice: '—',
+    senderName: 'Deepa Krishnan',
+    senderEmail: 'deepa.k@gmail.com',
+    senderPhone: '9884123890',
+    message: 'Need assistance with legal document verification and market valuation for an ancestral residential plot.',
+    status: 'Contact Pending',
+    createdAt: ago(1.1),
   },
 ];
 
@@ -313,6 +349,129 @@ const seedApplications = [
     resumeOriginalName: 'Ramesh_CV.pdf',
     status: 'new',
     createdAt: ago(2),
+  },
+];
+
+const seedYoutubeLinks = [
+  {
+    id: 'yt_1',
+    title: 'Touring Luxury Seaside Villas in ECR Chennai',
+    youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    description: 'Explore breathtaking private seaside villas with Italian marble finish, private pool, and ocean views in Chennai.',
+    category: 'Virtual Tours',
+    status: 'active',
+    createdAt: ago(5),
+  },
+  {
+    id: 'yt_2',
+    title: 'Top 5 Real Estate Investment Hubs in Bengaluru',
+    youtubeUrl: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+    description: 'Comprehensive market analysis covering upcoming metro extensions, commercial hubs, and high appreciation residential corridors across Bengaluru.',
+    category: 'Market Trends',
+    status: 'active',
+    createdAt: ago(15),
+  },
+  {
+    id: 'yt_3',
+    title: 'Modern High-Rise Duplex Penthouse Walkthrough',
+    youtubeUrl: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
+    description: 'Walk through an ultra-spacious 4 BHK duplex penthouse featuring smart home automation, open terrace garden, and skyline views.',
+    category: 'Walkthrough',
+    status: 'active',
+    createdAt: ago(28),
+  },
+];
+
+const seedBlogs = [
+  {
+    id: 'blog_1',
+    title: 'Essential Guide to Buying Real Estate in South India: 2026 Edition',
+    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80',
+    description: 'The real estate market across Chennai, Bengaluru, and Hyderabad is undergoing unprecedented transformation driven by infrastructure expansion, metro connectivity, and thriving tech corridors. Whether you are a first-time homebuyer or an experienced investor looking to diversify into commercial spaces, understanding legal title verification, RERA compliance, and emerging growth corridors is paramount for long-term capital appreciation.',
+    keyfactors: [
+      'Strict RERA approval and legal title diligence',
+      'Proximity to upcoming metro stations and ring roads',
+      'High rental yield potential in IT-centric corridors',
+      'Builder track record and construction delivery speed',
+      'Transparent documentation and property tax registration',
+    ],
+    author: 'ProBridge Research Desk',
+    category: 'Market Analysis',
+    status: 'published',
+    createdAt: ago(8),
+  },
+  {
+    id: 'blog_2',
+    title: 'Luxury Sustainable Homes: The Future of Eco-Friendly Urban Living',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    description: 'Modern luxury is no longer solely defined by opulent chandeliers and marble floorings. Discerning homeowners now prioritize IGBC Green Certified constructions, integrated solar power generation, rainwater harvesting systems, and natural cross-ventilation. Developers are responding by blending bioclimatic architecture with high-end lifestyle amenities that minimize carbon footprint without sacrificing aesthetic elegance.',
+    keyfactors: [
+      'Zero-discharge water treatment and rainwater recycling',
+      'Rooftop solar energy grids reducing electricity overheads',
+      'Low-VOC paints and locally sourced non-toxic materials',
+      'Smart home energy management and automated climate control',
+      'Higher resale valuation for certified green developments',
+    ],
+    author: 'Ananya Sharma',
+    category: 'Architecture & Living',
+    status: 'published',
+    createdAt: ago(20),
+  },
+  {
+    id: 'blog_3',
+    title: 'Commercial vs Residential Real Estate: Which Yields Better ROI?',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+    description: 'Deciding between commercial office assets and residential apartments depends heavily on your capital pool, risk tolerance, and investment horizon. While residential investments offer greater liquidity, tax incentives, and lower entry barriers, commercial real estate typically commands rental yields of 7-9% with long-term lease lock-ins and corporate tenants.',
+    keyfactors: [
+      '7-9% average rental yield on premium commercial properties',
+      'Residential properties offer higher liquidity and retail buyer demand',
+      'Commercial leases provide longer lock-in periods (3-5 years)',
+      'Maintenance responsibilities often borne by commercial tenants',
+      'Tax advantages on home loans for residential properties',
+    ],
+    author: 'Karthik Subramanian',
+    category: 'Investment Tips',
+    status: 'published',
+    createdAt: ago(35),
+  },
+];
+
+const seedBridgeGuides = [
+  {
+    id: 'guide_1',
+    title: 'The Ultimate RERA & Legal Verification Handbook for Homebuyers',
+    thumbnail: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80',
+    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileName: 'ProBridge_RERA_Legal_Handbook_2026.pdf',
+    fileSize: '2.4 MB',
+    description: 'Comprehensive 40-page guide covering RERA compliance checks, encumbrance certificate verification, mother deed validation, and checklist for new property registration.',
+    category: 'Legal & Verification',
+    status: 'active',
+    createdAt: ago(10),
+  },
+  {
+    id: 'guide_2',
+    title: 'Tax Deductions, Home Loan Subsidy & Stamp Duty Rates (2026)',
+    thumbnail: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
+    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileName: 'ProBridge_Tax_HomeLoan_Guide.pdf',
+    fileSize: '1.8 MB',
+    description: 'Step-by-step financial advisory document detailing Section 80C & 24(b) tax savings, interest calculation, PMAY subsidy eligibility, and state stamp duty structures across South India.',
+    category: 'Financial Planning',
+    status: 'active',
+    createdAt: ago(22),
+  },
+  {
+    id: 'guide_3',
+    title: 'NRI Real Estate Investment Manual: FEMA Rules, Repatriation & Power of Attorney',
+    thumbnail: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    pdfUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileName: 'ProBridge_NRI_Investment_Manual.pdf',
+    fileSize: '3.1 MB',
+    description: 'Essential guide for Non-Resident Indians outlining FEMA regulations, NRE/NRO banking channels, TDS rates on property sale, and remote property management.',
+    category: 'NRI Investment',
+    status: 'active',
+    createdAt: ago(36),
   },
 ];
 
@@ -735,5 +894,146 @@ export const localService = {
     const updated = list.map((b) => ((b._id || b.id) === id ? { ...b, status } : b));
     saveStore('builders', updated);
     return wait({ result: updated.find((b) => (b._id || b.id) === id) });
+  },
+
+  // ── YouTube Links ──
+  async listYoutubeLinks() {
+    const list = loadStore('youtube_links', seedYoutubeLinks);
+    return wait(list);
+  },
+
+  async createYoutubeLink(d) {
+    const list = loadStore('youtube_links', seedYoutubeLinks);
+    const item = {
+      id: `yt_${Date.now()}`,
+      _id: `yt_${Date.now()}`,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      ...d,
+    };
+    const updated = [item, ...list];
+    saveStore('youtube_links', updated);
+    return wait({ result: item });
+  },
+
+  async updateYoutubeLink(id, d) {
+    const list = loadStore('youtube_links', seedYoutubeLinks);
+    const updated = list.map((y) => ((y._id || y.id) === id ? { ...y, ...d } : y));
+    saveStore('youtube_links', updated);
+    return wait({ result: updated.find((y) => (y._id || y.id) === id) });
+  },
+
+  async deleteYoutubeLink(id) {
+    const list = loadStore('youtube_links', seedYoutubeLinks);
+    const updated = list.filter((y) => (y._id || y.id) !== id);
+    saveStore('youtube_links', updated);
+    return wait({ success: true });
+  },
+
+  async toggleYoutubeLinkStatus(id, status) {
+    const list = loadStore('youtube_links', seedYoutubeLinks);
+    const updated = list.map((y) => ((y._id || y.id) === id ? { ...y, status } : y));
+    saveStore('youtube_links', updated);
+    return wait({ result: updated.find((y) => (y._id || y.id) === id) });
+  },
+
+  // ── Blogs ──
+  async listBlogs() {
+    const list = loadStore('blogs', seedBlogs);
+    return wait(list);
+  },
+
+  async createBlog(d) {
+    const list = loadStore('blogs', seedBlogs);
+    const item = {
+      id: `blog_${Date.now()}`,
+      _id: `blog_${Date.now()}`,
+      status: d.status || 'published',
+      createdAt: new Date().toISOString(),
+      ...d,
+      keyfactors: Array.isArray(d.keyfactors)
+        ? d.keyfactors
+        : typeof d.keyfactors === 'string'
+        ? d.keyfactors.split('\n').map((k) => k.trim()).filter(Boolean)
+        : [],
+    };
+    const updated = [item, ...list];
+    saveStore('blogs', updated);
+    return wait({ result: item });
+  },
+
+  async updateBlog(id, d) {
+    const list = loadStore('blogs', seedBlogs);
+    const payload = {
+      ...d,
+      ...(d.keyfactors !== undefined && {
+        keyfactors: Array.isArray(d.keyfactors)
+          ? d.keyfactors
+          : typeof d.keyfactors === 'string'
+          ? d.keyfactors.split('\n').map((k) => k.trim()).filter(Boolean)
+          : [],
+      }),
+    };
+    const updated = list.map((b) => ((b._id || b.id) === id ? { ...b, ...payload } : b));
+    saveStore('blogs', updated);
+    return wait({ result: updated.find((b) => (b._id || b.id) === id) });
+  },
+
+  async deleteBlog(id) {
+    const list = loadStore('blogs', seedBlogs);
+    const updated = list.filter((b) => (b._id || b.id) !== id);
+    saveStore('blogs', updated);
+    return wait({ success: true });
+  },
+
+  async toggleBlogStatus(id, status) {
+    const list = loadStore('blogs', seedBlogs);
+    const updated = list.map((b) => ((b._id || b.id) === id ? { ...b, status } : b));
+    saveStore('blogs', updated);
+    return wait({ result: updated.find((b) => (b._id || b.id) === id) });
+  },
+
+  // ── Bridge Guides ──
+  async listBridgeGuides() {
+    const list = loadStore('bridge_guides', seedBridgeGuides);
+    return wait(list);
+  },
+
+  async createBridgeGuide(d) {
+    const list = loadStore('bridge_guides', seedBridgeGuides);
+    const item = {
+      id: `guide_${Date.now()}`,
+      _id: `guide_${Date.now()}`,
+      status: d.status || 'active',
+      createdAt: new Date().toISOString(),
+      fileName: d.fileName || 'guide_document.pdf',
+      fileSize: d.fileSize || '1.5 MB',
+      category: d.category || 'Buyer Handbook',
+      ...d,
+    };
+    const updated = [item, ...list];
+    saveStore('bridge_guides', updated);
+    return wait({ result: item });
+  },
+
+  async updateBridgeGuide(id, d) {
+    const list = loadStore('bridge_guides', seedBridgeGuides);
+    const updated = list.map((g) => ((g._id || g.id) === id ? { ...g, ...d } : g));
+    saveStore('bridge_guides', updated);
+    return wait({ result: updated.find((g) => (g._id || g.id) === id) });
+  },
+
+  async deleteBridgeGuide(id) {
+    const list = loadStore('bridge_guides', seedBridgeGuides);
+    const updated = list.filter((g) => (g._id || g.id) !== id);
+    saveStore('bridge_guides', updated);
+    return wait({ success: true });
+  },
+
+  async toggleBridgeGuideStatus(id, status) {
+    const list = loadStore('bridge_guides', seedBridgeGuides);
+    const updated = list.map((g) => ((g._id || g.id) === id ? { ...g, status } : g));
+    saveStore('bridge_guides', updated);
+    return wait({ result: updated.find((g) => (g._id || g.id) === id) });
   },
 };

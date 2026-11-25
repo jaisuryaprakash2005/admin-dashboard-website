@@ -128,8 +128,27 @@ export default function Leads() {
   };
 
 
+  const isContactUsLead = (lead) => {
+    if (!lead) return false;
+    if (lead.isContactUs === true || lead.source === 'contact_us') return true;
+    const reqType = (lead.requestType || '').toLowerCase();
+    const title = (lead.title || '').toLowerCase();
+    const pTitle = (lead.propertyTitle || '').toLowerCase();
+    const msg = (lead.message || lead.comment || '').toLowerCase();
+    const subject = (lead.subject || lead.contactUsSubject || '').toLowerCase();
+    return (
+      reqType.includes('contact') ||
+      title.includes('contact us') ||
+      pTitle.includes('contact us') ||
+      subject.includes('contact') ||
+      lead.source === 'contact_us' ||
+      (!lead.propertyId && (title.includes('contact') || msg.includes('contact') || subject))
+    );
+  };
+
   const isCallbackLead = (lead) => {
     if (!lead) return false;
+    if (isContactUsLead(lead)) return false;
     if (lead.isCallback === true) return true;
     const reqType = (lead.requestType || '').toLowerCase();
     const title = (lead.title || '').toLowerCase();
@@ -158,6 +177,9 @@ export default function Leads() {
           lead.city,
           lead.message,
           lead.ownerName,
+          lead.subject,
+          lead.contactUsSubject,
+          lead.source,
         ].some((v) => (v || '').toLowerCase().includes(term));
         if (!matches) return false;
       }
@@ -167,9 +189,10 @@ export default function Leads() {
         return false;
       }
 
-      // Request type filter (Enquiry vs Callback)
+      // Request type filter (Enquiry vs Callback vs Contact Us)
       if (leadTypeFilter === 'callback' && !isCallbackLead(lead)) return false;
-      if (leadTypeFilter === 'enquiry' && isCallbackLead(lead)) return false;
+      if (leadTypeFilter === 'enquiry' && (isCallbackLead(lead) || isContactUsLead(lead))) return false;
+      if (leadTypeFilter === 'contact_us' && !isContactUsLead(lead)) return false;
 
       // Status filter
       if (statusFilter && (lead.status || 'New') !== statusFilter) return false;
@@ -218,8 +241,9 @@ export default function Leads() {
     return Array.from(map.values()).sort((a, b) => b.totalEnquiries - a.totalEnquiries);
   }, [filteredLeads]);
 
-  const enquiryCount = useMemo(() => leads.filter((l) => !isCallbackLead(l)).length, [leads]);
+  const contactUsCount = useMemo(() => leads.filter(isContactUsLead).length, [leads]);
   const callbackCount = useMemo(() => leads.filter(isCallbackLead).length, [leads]);
+  const enquiryCount = useMemo(() => leads.filter((l) => !isCallbackLead(l) && !isContactUsLead(l)).length, [leads]);
 
 
   // Grouped by Property for "Property Views & Leads" View
@@ -562,6 +586,26 @@ export default function Leads() {
         >
           <PhoneCall size={14} color="#b45309" /> Callback Requests ({callbackCount})
         </button>
+
+        <button
+          type="button"
+          onClick={() => setLeadTypeFilter('contact_us')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 8,
+            border: leadTypeFilter === 'contact_us' ? '1.5px solid #0D5F4E' : '1px solid var(--border)',
+            background: leadTypeFilter === 'contact_us' ? '#ecfdf5' : 'var(--surface)',
+            color: leadTypeFilter === 'contact_us' ? '#065f46' : 'var(--text)',
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <MessageSquareText size={14} color="#0D5F4E" /> Contact Us Submissions ({contactUsCount})
+        </button>
       </div>
 
       {/* ── Filter & Search Toolbar ── */}
@@ -589,6 +633,7 @@ export default function Leads() {
               <option value="">All Request Types</option>
               <option value="enquiry">✉️ Enquiries Only</option>
               <option value="callback">📞 Callbacks Only</option>
+              <option value="contact_us">🌐 Contact Us Page Only</option>
             </select>
           </div>
 
@@ -682,6 +727,7 @@ export default function Leads() {
                   <th>Enquiring User (Lead)</th>
                   <th style={{ minWidth: 160 }}>Request Type</th>
                   <th style={{ minWidth: 165 }}>Status</th>
+                  <th style={{ minWidth: 175 }}>Contact Us</th>
                   <th>Target Property</th>
                   <th>Views</th>
                   <th>Enquiry Message</th>
@@ -781,7 +827,27 @@ export default function Leads() {
 
                       {/* Request Type Column */}
                       <td>
-                        {isCallbackLead(lead) ? (
+                        {isContactUsLead(lead) ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '5px 12px',
+                              borderRadius: 999,
+                              backgroundColor: '#ecfdf5',
+                              border: '1.5px solid #a7f3d0',
+                              color: '#065f46',
+                              fontSize: 12,
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                            }}
+                          >
+                            <MessageSquareText size={13} strokeWidth={2.5} color="#065f46" />
+                            Contact Us Form
+                          </span>
+                        ) : isCallbackLead(lead) ? (
                           <span
                             style={{
                               display: 'inline-flex',
@@ -891,52 +957,164 @@ export default function Leads() {
                         })()}
                       </td>
 
-                      {/* Property Info */}
-                      <td style={{ maxWidth: 260 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <img
-                            src={lead.propertyImage || ''}
-                            alt=""
-                            className="thumb-img"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                          />
-                          <div>
-                            <strong
+                      {/* Contact Us Column */}
+                      <td>
+                        {isContactUsLead(lead) ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <span
                               style={{
-                                fontSize: 13,
-                                display: 'block',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '4px 10px',
+                                borderRadius: 999,
+                                backgroundColor: '#ecfdf5',
+                                border: '1.5px solid #a7f3d0',
+                                color: '#065f46',
+                                fontSize: 11.5,
+                                fontWeight: 700,
                                 whiteSpace: 'nowrap',
-                                maxWidth: 180,
+                                width: 'fit-content',
                               }}
-                              title={lead.propertyTitle}
                             >
-                              {lead.propertyTitle}
-                            </strong>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                              <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--text)' }}>
-                                {lead.propertyPrice}
-                              </span>
                               <span
                                 style={{
-                                  fontSize: 10,
-                                  fontWeight: 600,
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: '50%',
+                                  backgroundColor: '#10b981',
+                                }}
+                              />
+                              Contact Us Page
+                            </span>
+                            {lead.contactUsSubject || lead.subject ? (
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  color: '#0f172a',
+                                  fontWeight: 700,
+                                  maxWidth: 200,
+                                  lineHeight: 1.3,
+                                }}
+                                title={lead.contactUsSubject || lead.subject}
+                              >
+                                {lead.contactUsSubject || lead.subject}
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: 11, color: '#64748b' }}>
+                                Website Direct Query
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: '3px 8px',
+                              borderRadius: 6,
+                              backgroundColor: '#f1f5f9',
+                              border: '1px solid #e2e8f0',
+                              color: '#64748b',
+                              fontSize: 11,
+                              fontWeight: 600,
+                            }}
+                          >
+                            Property Page
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Property Info */}
+                      <td style={{ maxWidth: 260 }}>
+                        {isContactUsLead(lead) && (!lead.propertyId || String(lead.propertyTitle).includes('Contact Us')) ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div
+                              style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 8,
+                                background: 'linear-gradient(135deg, #0D5F4E, #134E3A)',
+                                color: '#fff',
+                                display: 'grid',
+                                placeItems: 'center',
+                                flexShrink: 0,
+                                boxShadow: '0 2px 6px rgba(13,95,78,0.2)',
+                              }}
+                            >
+                              <MessageSquareText size={20} />
+                            </div>
+                            <div>
+                              <strong style={{ fontSize: 13, color: '#0F172A', display: 'block' }}>
+                                ProBridge Website
+                              </strong>
+                              <span
+                                style={{
+                                  fontSize: 10.5,
+                                  fontWeight: 700,
                                   padding: '1px 6px',
                                   borderRadius: 4,
-                                  background: typeBadge.bg,
-                                  color: typeBadge.color,
-                                  border: `1px solid ${typeBadge.border}`,
+                                  background: '#ECFDF5',
+                                  color: '#065F46',
+                                  border: '1px solid #A7F3D0',
+                                  display: 'inline-block',
+                                  marginTop: 2,
                                 }}
                               >
-                                {typeBadge.label}
+                                Contact Us Page
                               </span>
+                              <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+                                {lead.city || lead.propertyLocation || 'Website Form'}
+                              </div>
                             </div>
-                            <small className="muted-text" style={{ fontSize: 11 }}>
-                              {lead.city || lead.propertyLocation || 'India'}
-                            </small>
                           </div>
-                        </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <img
+                              src={lead.propertyImage || ''}
+                              alt=""
+                              className="thumb-img"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                            <div>
+                              <strong
+                                style={{
+                                  fontSize: 13,
+                                  display: 'block',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: 180,
+                                }}
+                                title={lead.propertyTitle}
+                              >
+                                {lead.propertyTitle}
+                              </strong>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                                <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--text)' }}>
+                                  {lead.propertyPrice}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    padding: '1px 6px',
+                                    borderRadius: 4,
+                                    background: typeBadge.bg,
+                                    color: typeBadge.color,
+                                    border: `1px solid ${typeBadge.border}`,
+                                  }}
+                                >
+                                  {typeBadge.label}
+                                </span>
+                              </div>
+                              <small className="muted-text" style={{ fontSize: 11 }}>
+                                {lead.city || lead.propertyLocation || 'India'}
+                              </small>
+                            </div>
+                          </div>
+                        )}
                       </td>
 
                       {/* Views Count */}
@@ -1524,18 +1702,53 @@ function UserEnquiryHistoryModal({
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <img
-                      src={enq.propertyImage || ''}
-                      alt=""
-                      style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover' }}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
+                    {isContactUsLead(enq) ? (
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          background: 'linear-gradient(135deg, #0D5F4E, #134E3A)',
+                          color: '#fff',
+                          display: 'grid',
+                          placeItems: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <MessageSquareText size={20} />
+                      </div>
+                    ) : (
+                      <img
+                        src={enq.propertyImage || ''}
+                        alt=""
+                        style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
                     <div>
                       <strong style={{ fontSize: 13, color: 'var(--text)' }}>
                         {enq.propertyTitle}
                       </strong>
-                      <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>
-                        {enq.propertyPrice} • <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{enq.city || 'India'}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        {isContactUsLead(enq) ? (
+                          <span
+                            style={{
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              padding: '1px 6px',
+                              borderRadius: 4,
+                              background: '#ECFDF5',
+                              color: '#065F46',
+                              border: '1px solid #A7F3D0',
+                            }}
+                          >
+                            Contact Us Submission • {enq.contactUsSubject || enq.subject || 'Website Inquiry'}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>
+                            {enq.propertyPrice} • <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{enq.city || 'India'}</span>
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

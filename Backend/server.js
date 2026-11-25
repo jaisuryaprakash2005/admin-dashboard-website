@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -12,6 +12,9 @@ const topBannersRoutes = require('./src/routes/topBanners');
 const enquiriesRoutes = require('./src/routes/enquiries');
 const careersRoutes = require('./src/routes/careers');
 const buildersRoutes = require('./src/routes/builders');
+const youtubeLinksRoutes = require('./src/routes/youtubeLinks');
+const blogsRoutes = require('./src/routes/blogs');
+const bridgeGuidesRoutes = require('./src/routes/bridgeGuides');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +33,18 @@ app.use('/api/top-banners', topBannersRoutes);
 app.use('/api/enquiries', enquiriesRoutes);
 app.use('/api/careers', careersRoutes);
 app.use('/api/builders', buildersRoutes);
+app.use('/api/youtube-links', youtubeLinksRoutes);
+app.use('/api/blogs', blogsRoutes);
+app.use('/api/bridge-guides', bridgeGuidesRoutes);
+
+app.get('/api/health', (_req, res) => {
+  const dbConnected = mongoose.connection.readyState === 1;
+  res.json({
+    status: 'ok',
+    database: dbConnected ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.get('/', (_req, res) => res.json({ message: 'ProBridge API running ✅' }));
 
